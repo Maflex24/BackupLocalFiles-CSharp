@@ -28,31 +28,26 @@ namespace BackupLocalFiles_CSharp
                     System.Console.WriteLine("destination directory not existed, but it was created");
                 }
 
-                System.Collections.Generic.IEnumerable<string> allFilesInAllFolders = Directory.EnumerateFiles(sourceBackupPath, "*", SearchOption.AllDirectories);
-                System.Console.WriteLine("All files in source backup folders:");
-                foreach (var file in allFilesInAllFolders)
-                {
-                    System.Console.WriteLine(file);
-                    System.Console.WriteLine(Directory.GetCurrentDirectory());
-                    System.Console.WriteLine("");
-
-                    string sourceFileName = Path.GetFileName(file);
-                    string destinationFilePathAndName = Path.Combine(destinationBackupPath, sourceFileName);
-                    File.Copy(file, destinationFilePathAndName, true);
-                }
-
-                // string[] files = Directory.GetFiles(sourceBackupPath);
-
-                // foreach (string file in files)
-                // {
-                //     string sourceFileName = Path.GetFileName(file);
-                //     string destinationFilePathAndName = Path.Combine(destinationBackupPath, sourceFileName);
-                //     File.Copy(file, destinationFilePathAndName, true);
-                // }
+                CopyFilesBackup(sourceBackupPath, destinationBackupPath);
             }
             else
             {
                 System.Console.WriteLine("souce path doesn't exist");
+            }
+        }
+        //solution was found in: https://stackoverflow.com/posts/3822913
+        private static void CopyFilesBackup(string sourcePath, string destinationPath)
+        {
+            //create directories
+            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
+            }
+
+            //Copy all the files & Replaces any files with the same name
+            foreach (string newPath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
+            {
+                File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
             }
         }
     }
