@@ -9,12 +9,16 @@ namespace BackupLocalFiles_CSharp
     {
         static void Main(string[] args)
         {
-            Console.Clear();
+            try { Console.Clear(); }
+            catch { System.Console.WriteLine("console can't be cleared now"); }
+
             string sourceBackupPath = Path.Combine(Directory.GetCurrentDirectory(), "sourceCopy");
             string destinationBackupPath = Path.Combine(Directory.GetCurrentDirectory(), "destinationCopy");
 
-            // string sourceBackupPath = $"F:{Path.AltDirectorySeparatorChar}Photo";
-            // string destinationBackupPath = $"F:{Path.AltDirectorySeparatorChar}PhotoCopyOne";
+            // string sourceBackupPath = $"D:{Path.AltDirectorySeparatorChar}DEVs";
+            // string destinationBackupPath = $"E:{Path.AltDirectorySeparatorChar}Documents{Path.AltDirectorySeparatorChar}DEVs copy";
+
+            System.Console.WriteLine(getFileNameFromPath(Path.Combine(sourceBackupPath, "longtext.txt")));
 
             if (Directory.Exists(sourceBackupPath))
             {
@@ -34,6 +38,9 @@ namespace BackupLocalFiles_CSharp
             {
                 System.Console.WriteLine("souce path doesn't exist");
             }
+
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadKey();
         }
         //solution was found in: https://stackoverflow.com/posts/3822913
         private static void CopyFilesBackup(string sourcePath, string destinationPath)
@@ -41,14 +48,35 @@ namespace BackupLocalFiles_CSharp
             //create directories
             foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
             {
+                Debug.Print(dirPath);
+                System.Console.WriteLine($"Cloning dir: {dirPath}");
                 Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
             }
 
             //Copy all the files & Replaces any files with the same name
             foreach (string newPath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
             {
-                File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
+                try
+                {
+                    System.Console.WriteLine($"Copy file: {newPath}");
+                    File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
+                }
+                catch (System.UnauthorizedAccessException)
+                {
+                    System.Console.WriteLine("System.UnauthorizedAccessException");
+                }
+
             }
+        }
+
+        static string getFileNameFromPath(string path)
+        {
+            string[] pathElements = path.Split(Path.DirectorySeparatorChar);
+            int pathLength = pathElements.Length;
+
+            string fileName = pathElements[pathLength - 1];
+
+            return fileName;
         }
     }
 }
