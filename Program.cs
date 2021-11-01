@@ -38,8 +38,8 @@ namespace BackupLocalFiles_CSharp
                 System.Console.WriteLine("souce path doesn't exist");
             }
 
-            // Console.WriteLine("Press any key to exit.");
-            // Console.ReadKey();
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadKey();
         }
         //solution was found in: https://stackoverflow.com/posts/3822913
         private static void CopyFilesBackup(string sourcePath, string destinationPath)
@@ -48,8 +48,12 @@ namespace BackupLocalFiles_CSharp
             foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
             {
                 Debug.Print(dirPath);
-                System.Console.WriteLine($"Cloning dir: {dirPath}");
-                Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
+                if (!Directory.Exists(dirPath.Replace(sourcePath, destinationPath)))
+                {
+                    System.Console.WriteLine($"Cloning dir: {dirPath}");
+                    Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
+                }
+
             }
 
             //Copy all the files & Replaces any files with the same name
@@ -59,17 +63,11 @@ namespace BackupLocalFiles_CSharp
                 {
                     DateTime sourceFileEditedTime = File.GetLastWriteTimeUtc(newSourcePath);
                     DateTime backupFileEditedTime = File.GetLastWriteTimeUtc(newSourcePath.Replace(sourcePath, destinationPath));
-                    // System.Console.WriteLine(sourceFileEditedTime);
-                    // System.Console.WriteLine(backupFileEditedTime);
 
                     if (sourceFileEditedTime > backupFileEditedTime)
                     {
                         System.Console.WriteLine($"Copy file: {newSourcePath}");
                         File.Copy(newSourcePath, newSourcePath.Replace(sourcePath, destinationPath), true);
-                    }
-                    else
-                    {
-                        System.Console.WriteLine($"File {newSourcePath} is up to date in copy directory");
                     }
                 }
                 catch (System.UnauthorizedAccessException)
