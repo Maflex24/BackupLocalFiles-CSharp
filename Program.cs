@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,35 +12,34 @@ namespace BackupLocalFiles_CSharp
             try { Console.Clear(); }
             catch { System.Console.WriteLine("console can't be cleared now"); }
 
-            string sourceBackupPath = Path.Combine(Directory.GetCurrentDirectory(), "sourceCopy");
-            string destinationBackupPath = Path.Combine(Directory.GetCurrentDirectory(), "destinationCopy");
+            string sourcePath = Path.Combine(Directory.GetCurrentDirectory(), "sourceCopy");
+            string destinationPath = Path.Combine(Directory.GetCurrentDirectory(), "destinationCopy");
 
-            // string sourceBackupPath = $"D:{Path.AltDirectorySeparatorChar}DEVs";
-            // string destinationBackupPath = $"E:{Path.AltDirectorySeparatorChar}Documents{Path.AltDirectorySeparatorChar}DEVs copy";
+            // string sourcePath = $"D:{Path.AltDirectorySeparatorChar}DEVs";
+            // string destinationPath = $"E:{Path.AltDirectorySeparatorChar}Documents{Path.AltDirectorySeparatorChar}DEVs copy";
 
-            System.Console.WriteLine(getFileNameFromPath(Path.Combine(sourceBackupPath, "longtext.txt")));
 
-            if (Directory.Exists(sourceBackupPath))
+            if (Directory.Exists(sourcePath))
             {
-                if (Directory.Exists(destinationBackupPath))
+                if (Directory.Exists(destinationPath))
                 {
                     System.Console.WriteLine("destination directory exist");
                 }
                 else
                 {
-                    Directory.CreateDirectory(destinationBackupPath);
+                    Directory.CreateDirectory(destinationPath);
                     System.Console.WriteLine("destination directory not existed, but it was created");
                 }
 
-                CopyFilesBackup(sourceBackupPath, destinationBackupPath);
+                CopyFilesBackup(sourcePath, destinationPath);
             }
             else
             {
                 System.Console.WriteLine("souce path doesn't exist");
             }
 
-            Console.WriteLine("Press any key to exit.");
-            Console.ReadKey();
+            // Console.WriteLine("Press any key to exit.");
+            // Console.ReadKey();
         }
         //solution was found in: https://stackoverflow.com/posts/3822913
         private static void CopyFilesBackup(string sourcePath, string destinationPath)
@@ -54,12 +53,24 @@ namespace BackupLocalFiles_CSharp
             }
 
             //Copy all the files & Replaces any files with the same name
-            foreach (string newPath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
+            foreach (string newSourcePath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
             {
                 try
                 {
-                    System.Console.WriteLine($"Copy file: {newPath}");
-                    File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
+                    DateTime sourceFileEditedTime = File.GetLastWriteTimeUtc(newSourcePath);
+                    DateTime backupFileEditedTime = File.GetLastWriteTimeUtc(newSourcePath.Replace(sourcePath, destinationPath));
+                    // System.Console.WriteLine(sourceFileEditedTime);
+                    // System.Console.WriteLine(backupFileEditedTime);
+
+                    if (sourceFileEditedTime > backupFileEditedTime)
+                    {
+                        System.Console.WriteLine($"Copy file: {newSourcePath}");
+                        File.Copy(newSourcePath, newSourcePath.Replace(sourcePath, destinationPath), true);
+                    }
+                    else
+                    {
+                        System.Console.WriteLine($"File {newSourcePath} is up to date in copy directory");
+                    }
                 }
                 catch (System.UnauthorizedAccessException)
                 {
@@ -69,7 +80,7 @@ namespace BackupLocalFiles_CSharp
             }
         }
 
-        static string getFileNameFromPath(string path)
+        static string getFileOrDirNameFromPath(string path)
         {
             string[] pathElements = path.Split(Path.DirectorySeparatorChar);
             int pathLength = pathElements.Length;
