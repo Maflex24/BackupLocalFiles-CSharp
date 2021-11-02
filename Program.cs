@@ -32,6 +32,12 @@ namespace BackupLocalFiles_CSharp
                 }
 
                 CopyFilesBackup(sourcePath, destinationPath);
+                if (!Directory.Exists(Path.Combine(destinationPath, "deletedContent")))
+                {
+                    Directory.CreateDirectory(Path.Combine(destinationPath, "deletedContent"));
+                    System.Console.WriteLine("Created directory for deleted files");
+                }
+                checkingDeletedFiles(sourcePath, destinationPath);
             }
             else
             {
@@ -47,7 +53,7 @@ namespace BackupLocalFiles_CSharp
             //create directories
             foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
             {
-                Debug.Print(dirPath);
+                // checking is directory exist in backup copy, if not, creating the directory
                 if (!Directory.Exists(dirPath.Replace(sourcePath, destinationPath)))
                 {
                     System.Console.WriteLine($"Cloning dir: {dirPath}");
@@ -86,6 +92,31 @@ namespace BackupLocalFiles_CSharp
             string fileName = pathElements[pathLength - 1];
 
             return fileName;
+        }
+
+        // That function check files exist in backup, but not in source, so, it was deleted. 
+        private static void checkingDeletedFiles(string sourcePath, string backupPath)
+        {
+            foreach (string directory in Directory.GetDirectories(backupPath, "*", SearchOption.AllDirectories))
+            {
+                string cutPath = directory.Replace(backupPath, "");
+                string newPath = Path.Combine(backupPath, "deletedContent");
+                newPath += cutPath;
+                Directory.CreateDirectory(newPath);
+            }
+            foreach (string file in Directory.GetFiles(backupPath, "*", SearchOption.AllDirectories))
+            {
+                if (!File.Exists(file.Replace(backupPath, sourcePath)))
+                {
+                    string cutPath = file.Replace(backupPath, "");
+                    string newPath = Path.Combine(backupPath, "deletedContent");
+                    newPath += cutPath;
+
+                    File.Move(file, newPath, true);
+                    System.Console.WriteLine($"{file} does not exist in source. It was moved to the deleted directory");
+                }
+            }
+
         }
     }
 }
