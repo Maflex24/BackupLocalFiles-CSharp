@@ -14,6 +14,8 @@ namespace BackupLocalFiles_CSharp
 
             string sourcePath = Path.Combine(Directory.GetCurrentDirectory(), "sourceCopy");
             string destinationPath = Path.Combine(Directory.GetCurrentDirectory(), "destinationCopy");
+            // path for files and directories, which was deleted in source, propably doesn't need anymore, but for safety reason and to keep order, ther are move to this path:
+            string deletedFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "BackupLocalFiles-DeleteFiles");
 
             // string sourcePath = $"D:{Path.AltDirectorySeparatorChar}DEVs";
             // string destinationPath = $"E:{Path.AltDirectorySeparatorChar}Documents{Path.AltDirectorySeparatorChar}DEVs copy";
@@ -32,12 +34,12 @@ namespace BackupLocalFiles_CSharp
                 }
 
                 CopyFilesBackup(sourcePath, destinationPath);
-                if (!Directory.Exists(Path.Combine(destinationPath, "deletedContent")))
+                if (!Directory.Exists(deletedFilesPath))
                 {
-                    Directory.CreateDirectory(Path.Combine(destinationPath, "deletedContent"));
+                    Directory.CreateDirectory(deletedFilesPath);
                     System.Console.WriteLine("Created directory for deleted files");
                 }
-                checkingDeletedFiles(sourcePath, destinationPath);
+                checkingDeletedFiles(sourcePath, destinationPath, deletedFilesPath);
             }
             else
             {
@@ -95,12 +97,12 @@ namespace BackupLocalFiles_CSharp
         }
 
         // That function check files exist in backup, but not in source, so, it was deleted. 
-        private static void checkingDeletedFiles(string sourcePath, string backupPath)
+        private static void checkingDeletedFiles(string sourcePath, string backupPath, string deletedFilesPath)
         {
             foreach (string directory in Directory.GetDirectories(backupPath, "*", SearchOption.AllDirectories))
             {
                 string cutPath = directory.Replace(backupPath, "");
-                string newPath = Path.Combine(backupPath, "deletedContent");
+                string newPath = Path.Combine(backupPath, deletedFilesPath);
                 newPath += cutPath;
                 Directory.CreateDirectory(newPath);
             }
@@ -109,7 +111,7 @@ namespace BackupLocalFiles_CSharp
                 if (!File.Exists(file.Replace(backupPath, sourcePath)))
                 {
                     string cutPath = file.Replace(backupPath, "");
-                    string newPath = Path.Combine(backupPath, "deletedContent");
+                    string newPath = Path.Combine(backupPath, deletedFilesPath);
                     newPath += cutPath;
 
                     File.Move(file, newPath, true);
