@@ -34,11 +34,6 @@ namespace BackupLocalFiles_CSharp
                 }
 
                 CopyFilesBackup(sourcePath, destinationPath);
-                if (!Directory.Exists(deletedFilesPath))
-                {
-                    Directory.CreateDirectory(deletedFilesPath);
-                    System.Console.WriteLine("Created directory for deleted files");
-                }
                 checkingDeletedFiles(sourcePath, destinationPath, deletedFilesPath);
             }
             else
@@ -99,6 +94,12 @@ namespace BackupLocalFiles_CSharp
         // That function check files exist in backup, but not in source, so, it was deleted. 
         private static void checkingDeletedFiles(string sourcePath, string backupPath, string deletedFilesPath)
         {
+            if (!Directory.Exists(deletedFilesPath))
+            {
+                Directory.CreateDirectory(deletedFilesPath);
+                System.Console.WriteLine("Created directory for deleted files");
+            }
+
             foreach (string directory in Directory.GetDirectories(backupPath, "*", SearchOption.AllDirectories))
             {
                 string cutPath = directory.Replace(backupPath, "");
